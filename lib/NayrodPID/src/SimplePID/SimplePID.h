@@ -22,6 +22,7 @@ class SimplePID {
     void activateSetPointFilter(bool flag);
 
     void reset();
+    void forceNextUpdate();
 
     void setManualOutput(float output = 0.0f);
     void computeSetpointDelay(float systemDelay);

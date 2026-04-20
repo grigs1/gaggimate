@@ -130,6 +130,8 @@ void SimplePID::reset() {
     setpointFiltstate1 = 0.0f;
 }
 
+void SimplePID::forceNextUpdate() { lastTime = 0; }
+
 // GETTER-SETTER FUNCTIONS
 // Setpoint
 void SimplePID::setSetpointRateLimits(float minRate, float maxRate) {
