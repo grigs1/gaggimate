@@ -1,6 +1,7 @@
 #include "WebUIPlugin.h"
 #include <DNSServer.h>
 #include <SPIFFS.h>
+#include <Update.h>
 #include <display/core/Controller.h>
 #include <display/core/ProfileManager.h>
 #include <display/core/process/BrewProcess.h>
@@ -219,6 +220,51 @@ void WebUIPlugin::setupServer() {
         }
     });
     server.on("/api/core-dump", HTTP_GET, [this](AsyncWebServerRequest *request) { handleCoreDumpDownload(request); });
+    server.on(
+        "/api/ota/upload", HTTP_POST,
+        [this](AsyncWebServerRequest *request) {
+            bool success = !Update.hasError();
+            JsonDocument doc;
+            doc["success"] = success;
+            if (!success) {
+                doc["error"] = String(Update.errorString());
+            }
+            request->send(200, "application/json", doc.as<String>());
+            if (success) {
+                updateOTAProgress(PHASE_FINISHED, 100);
+                delay(1000);
+                ESP.restart();
+            }
+        },
+        nullptr,
+        [this](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
+            if (index == 0) {
+                if (updating) {
+                    return;
+                }
+                bool isFS = request->hasParam("type") && request->getParam("type")->value() == "filesystem";
+                uint8_t cmd = isFS ? U_SPIFFS : U_FLASH;
+                ESP_LOGI("WebUIPlugin", "Local OTA upload: %s, %u bytes", isFS ? "filesystem" : "firmware", total);
+                updateOTAProgress(isFS ? PHASE_DISPLAY_FS : PHASE_DISPLAY_FW, 0);
+                if (!Update.begin(total > 0 ? total : UPDATE_SIZE_UNKNOWN, cmd)) {
+                    ESP_LOGE("WebUIPlugin", "OTA begin failed: %s", Update.errorString());
+                    return;
+                }
+            }
+            if (len > 0) {
+                Update.write(data, len);
+            }
+            if (total > 0) {
+                bool isFS = request->hasParam("type") && request->getParam("type")->value() == "filesystem";
+                updateOTAProgress(isFS ? PHASE_DISPLAY_FS : PHASE_DISPLAY_FW,
+                                  static_cast<int>(100UL * (index + len) / total));
+            }
+            if (index + len >= total) {
+                if (!Update.end(true)) {
+                    ESP_LOGE("WebUIPlugin", "OTA end failed: %s", Update.errorString());
+                }
+            }
+        });
     server.onNotFound([](AsyncWebServerRequest *request) { request->send(SPIFFS, "/w/index.html"); });
     server.serveStatic("/", SPIFFS, "/w").setDefaultFile("index.html").setCacheControl("max-age=0");
     ws.onEvent(
