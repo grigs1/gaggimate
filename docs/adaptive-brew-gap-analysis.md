@@ -202,6 +202,54 @@ Proposed: explicitly define decay as `exp(−λ × daysSinceShot)` with `λ = 0.
 (half-weight at ~140 days, ~10% weight at ~460 days). Store `shotTimestamp` in notes JSON
 (it may already exist via shot ID).
 
+### 3.7 Integer rounding is not applied to PostShotGrindAdvisor output  ★ HIGH
+The diagram specifies:
+> *"Integer-scale auto-detect: round if all DB grinds are whole numbers"*
+
+This rounding is applied to `grindSetting` (the absolute prediction) and consequently to
+`grindAdjustment = predicted − last shot` in the pre-shot panel. Both values are already
+protected — they will never show a fractional step on a stepped grinder.
+
+However, `PostShotGrindAdvisor` outputs `adjustmentSteps` via a separate code path and the
+integer auto-detect is **not applied there**. The advisor accumulates small per-signal deltas
+and a trend multiplier and emits the raw float directly to the UI. On a grinder with integer
+steps this produces unactionable advice such as "Coarser +0.15" — a step size the user
+physically cannot apply.
+
+**Root cause:** the advisor and the prediction pipeline share the same integer-detection flag
+(`integerScaleDetected`) but only the prediction pipeline acts on it.
+
+**Fix — apply the same guard in PostShotGrindAdvisor:**
+```cpp
+float steps = computeRawAdjustment();   // e.g. +0.15
+
+if (db_.isIntegerScale()) {
+    if (std::abs(steps) < 0.5f) {
+        advice.direction   = DIRECTION_NONE;
+        advice.borderline  = true;          // new flag
+        advice.stepCount   = 0;
+    } else {
+        advice.stepCount = std::round(steps);  // ±1, ±2, …
+    }
+} else {
+    advice.stepCount = steps;   // stepless grinder: keep decimal
+}
+```
+
+**New `borderline` state in the UI:**
+When `borderline = true`, instead of showing "Coarser +0.15" show:
+
+> "Direction confirmed: slightly coarser — but the correction is smaller than one step.
+>  Pull one more shot at the current setting. If still slow or bitter, go +1 step."
+
+This prevents users from misreading a sub-step advisory as an instruction to move the grinder.
+
+**How the two outputs eventually converge:**
+The pre-shot prediction accumulates evidence shot by shot. When the bean model's internal
+regression drifts past the 0.5-step boundary (typically after 2–4 more borderline shots), the
+pre-shot `grindSetting` rounds up by one integer step and `grindAdjustment` shows "+1".
+At that point both outputs agree and the borderline state clears automatically.
+
 ---
 
 ## 4. Input & Output Gaps
@@ -275,6 +323,32 @@ SD card is removed, full, or corrupt mid-session, the diagram shows no fallback.
 - Emit `adaptive-brew:storage-error { reason }` so the UI can warn the user.
 - Continue serving predictions from in-memory state; mark learned updates as `pendingPersist`.
 
+### 5.4 No UI reconciliation when post-shot advisor and pre-shot recommendation disagree
+`PostShotGrindAdvisor` (reactive, last-shot signals) and `getPredictionWithContext()`
+(predictive, full history) are independent systems. They can produce outputs that appear to
+contradict each other with no explanation offered to the user:
+
+- Post-shot advisor: "Coarser +0.15" (or even after the fix: "borderline — direction coarser")
+- Pre-shot recommendation next call: "Grind 28, adjustment 0 (no change)"
+
+A user reading both panels will logically ask: *"Should I move the grinder or not?"* The UI
+currently shows both numbers side by side with no reconciliation.
+
+**When this disagreement occurs:**
+The advisor fires immediately after a shot based on reactive signals. The prediction model
+integrates those signals into the bean regression more slowly — it needs the sub-step drift
+to accumulate past the rounding boundary before it updates the integer recommendation.
+This means disagreement is normal and expected during the early learning phase and whenever
+signals are borderline.
+
+**Fix — add a reconciliation note between the two panels:**
+
+| Situation | Message |
+|---|---|
+| Advisor says "borderline coarser" AND recommendation says "no change" | "The trend is pointing coarser but hasn't crossed a full step yet. Recommendation will update automatically once enough shots confirm the direction." |
+| Advisor says "coarser +1" AND recommendation says "no change" | "Post-shot signals suggest a change but the full model needs more shots to agree. Consider following the advisor if taste is consistently off." |
+| Advisor and recommendation agree | No message — no confusion. |
+
 ---
 
 ## Summary Table
@@ -299,6 +373,7 @@ SD card is removed, full, or corrupt mid-session, the diagram shows no fallback.
 | 3.4 | Learning | Grid search unsafe on embedded hardware | **High** |
 | 3.5 | Learning | TFLite import path missing | **High** |
 | 3.6 | Learning | No time-decay on KNN history | Medium |
+| 3.7 | Learning | Integer rounding not applied to PostShotGrindAdvisor output | **High** |
 | 4.1 | Input | No grinder type/calibration input | Medium |
 | 4.2 | Input | No user target yield | Low |
 | 4.3 | Output | Taste prediction is single-label | Low |
@@ -306,3 +381,4 @@ SD card is removed, full, or corrupt mid-session, the diagram shows no fallback.
 | 5.1 | Architecture | 30 s WS timeout vs. long operations | **High** |
 | 5.2 | Architecture | No model versioning or rollback | Medium |
 | 5.3 | Architecture | No SD card failure degradation path | Medium |
+| 5.4 | Architecture | No UI reconciliation when advisor and recommendation disagree | Medium |

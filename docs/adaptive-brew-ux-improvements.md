@@ -108,6 +108,37 @@ which lets the system know the next shot started from the advised position.
 This closes the loop between advice and the next prediction's `grindAdjustment`
 reference point.
 
+### 4.5 Borderline grind advice state + advisor/recommendation reconciliation  ★★
+
+**Problem:** On a stepped (integer) grinder, the post-shot advisor can emit sub-step advice
+like "Coarser +0.15" which the user physically cannot apply. At the same time, the pre-shot
+recommendation (which already applies integer rounding) shows "no change." The two panels
+appear to contradict each other with no explanation.
+
+**Fix A — Borderline state in grind advice pill:**
+
+Replace fractional advice with a named state when `|adjustmentSteps| < 0.5` on an integer
+grinder:
+
+```
+Current:   ↑ Coarser  +0.15
+Fixed:     ↗ Borderline — direction coarser
+           "Signals agree the grind is slightly too fine, but the
+            correction is smaller than one step. Pull one more shot
+            at the current setting. If still slow or bitter, go +1."
+```
+
+**Fix B — Reconciliation note between panels:**
+
+When the advisor and pre-shot recommendation point in different directions (or one says
+"borderline" while the other says "no change"), show a linking note:
+
+> "The post-shot trend is pointing coarser but hasn't accumulated enough signal to shift
+>  the full recommendation yet. This is normal — the model needs 2–3 more shots to confirm.
+>  Follow the recommendation for now; it will update automatically."
+
+This note disappears once both panels agree.
+
 ### 4.4 Inline adjustment controls
 Instead of going to the grinder, adjusting, coming back, show a **+/−** stepper
 next to the grind advice. The user taps it to confirm how many steps they
@@ -812,6 +843,7 @@ Brew ends
 | ★★ | Data entry | 1.2 — Auto-fill bean fields from profile on Bean ID select |
 | ★★ | UX | 4.1 — Auto-trigger GetRecommendations when inputs ready |
 | ★★ | UX | 4.3 — "Applied" confirmation button for grind advice |
+| ★★ | UX | 4.5 — Borderline grind advice state + advisor/recommendation reconciliation |
 | ★★ | Explanations | 8.1–8.3 — Channeling / Flow CV / Max drop plain-language tooltips |
 | ★★ | Explanations | 8.5–8.6 — Expected time and yield contextual benchmarks |
 | ★ | Data entry | 1.3 — Remember last bean on app open |
