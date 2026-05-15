@@ -93,7 +93,9 @@ void Heater::loopPid() {
 
     // Calculate and set disturbance feedforward BEFORE PID update
     // Only apply thermal feedforward when Kf>0, valve is open, and water is flowing
-    if (combinedKff > 0.0f && pumpFlowRate && *pumpFlowRate > 0.01f && valveStatus && *valveStatus != 0) {
+    bool pumpNowActive = (combinedKff > 0.0f && pumpFlowRate && *pumpFlowRate > 0.01f && valveStatus && *valveStatus != 0);
+
+    if (pumpNowActive) {
         float currentFlowRate = *pumpFlowRate; // Use raw flow rate for fast response
         float disturbanceGain = calculateDisturbanceFeedforwardGain();
 
@@ -112,8 +114,15 @@ void Heater::loopPid() {
         simplePid->setDisturbanceFeedforward(currentFlowRate, disturbanceGain);
 
     } else {
+        if (lastPumpActive) {
+            // Pump just stopped — force an immediate PID recalculation so the
+            // feedforward contribution is removed from `output` within 10 ms
+            // instead of waiting up to 1 s for the next scheduled 1 Hz update.
+            simplePid->forceNextUpdate();
+        }
         simplePid->setDisturbanceFeedforward(0.0f, 0.0f);
     }
+    lastPumpActive = pumpNowActive;
 
     // Now run PID with proper feedforward integrated
     bool pidUpdated = simplePid->update();
@@ -220,17 +229,15 @@ float Heater::calculateDisturbanceFeedforwardGain() {
 
 float Heater::calculateSafetyScaling(float tempError) {
     // tempError = temperature - setpoint
-    // Use smoother, less aggressive safety scaling to reduce oscillations
+    // Reduce FF only when temperature is ABOVE setpoint to avoid overheating.
+    // Full FF at or below setpoint so disturbances are compensated immediately.
     if (tempError > 1.0f) {
         return 0.0f; // No FF if more than 1.0°C above setpoint
-    } else if (tempError >= 0.0f) {
+    } else if (tempError > 0.0f) {
         // Gradual reduction: 100% at 0°C error, 70% at +1.0°C error
-        return 0.7f + 0.3f * (1.0f - tempError / 1.0f);
-    } else if (tempError > -1.0f) {
-        // Scale from 70% to 100% as temperature drops below setpoint
-        return 0.7f + 0.3f * std::abs(tempError) / 1.0f;
+        return 0.7f + 0.3f * (1.0f - tempError);
     } else {
-        return 1.0f; // Full FF when more than 1.0°C below setpoint
+        return 1.0f; // Full FF at or below setpoint
     }
 }
 

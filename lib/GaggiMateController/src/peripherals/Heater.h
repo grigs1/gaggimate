@@ -69,7 +69,8 @@ class Heater {
     // Thermal feedforward variables
     float *pumpFlowRate = nullptr;
     int *valveStatus = nullptr;
-    float lastSafetyFactor = 1.0f; // For smooth safety scaling transitions
+    float lastSafetyFactor = 1.0f;
+    bool lastPumpActive = false;
     float incomingWaterTemp = 23.0f;
     float heaterEfficiency = 0.95f; // 95% efficiency (immersion heater)
     float heatLossWatts = 5.0f;     // 5W heat loss (well-insulated boiler)
