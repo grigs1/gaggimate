@@ -595,14 +595,219 @@ Multiple conditions can apply — show the highest priority match first with a
 
 ---
 
+## 10. After-Shot Analysis — Shot Linkage & Rating Propagation
+
+Three tightly related improvements that connect the After-Shot Analysis panel
+directly to the shot history record so the user never has to touch the history
+form manually.
+
+---
+
+### 10.1 Show Shot Number on the After-Shot Analysis Button  ★★
+
+**Current behaviour:**
+The button always reads "After-Shot Analysis" with no indication of which
+shot it refers to. After a busy session the user cannot tell whether the
+panel reflects the last shot or a stale result from a previous one.
+
+**Proposed:**
+Display the shot sequence number on the button as soon as the brew ends:
+
+```
+Before brew:   [ 📋  After-Shot Analysis ]
+After brew:    [ 📋  After-Shot Analysis  ·  Shot #247 ]
+```
+
+The shot number is already stored in the ShotHistoryPlugin as a zero-padded
+integer ID (`NNNNNN`). The firmware emits `controller:brew:end` with the shot
+ID; the AdaptiveBrewPlugin should include `shotId` in the
+`adaptive-brew:channeling-result` broadcast so the UI can display it.
+
+**Firmware change (AdaptiveBrewPlugin):**
+```cpp
+// in handleBrewEnd():
+result["shotId"] = shotHistoryPlugin_->getCurrentShotId();
+pluginManager_->trigger("adaptive-brew:channeling-result", result);
+```
+
+**UI change (AdaptiveBrewCard.jsx):**
+```jsx
+<Button>
+  After-Shot Analysis
+  {lastResult?.shotId && (
+    <span className="shot-badge">· Shot #{lastResult.shotId}</span>
+  )}
+</Button>
+```
+
+**Side benefit:** the shot number acts as a visual confirmation that the
+panel refreshed after the latest shot — the user can see the number increment.
+
+---
+
+### 10.2 Preload Shot History Fields Automatically After Brew  ★★★
+
+**Current behaviour:**
+The shot history form is a separate screen the user must navigate to and
+fill in manually after each shot. Most of the data it asks for already exists
+in the system at brew-end.
+
+**Proposed:**
+When `controller:brew:end` fires, the AdaptiveBrewPlugin assembles a
+complete pre-filled record and emits it. The After-Shot Analysis panel shows
+this record in review mode — all fields populated, nothing to type.
+
+**Data available at brew-end and where it comes from:**
+
+| Field | Source | Already available? |
+|---|---|---|
+| Shot # | ShotHistoryPlugin.getCurrentShotId() | ✅ Yes |
+| Timestamp | system clock | ✅ Yes |
+| Bean ID | current session (lastRecommendation_.beanId) | ✅ Yes |
+| Roast Level | bean profile JSON | ✅ Yes |
+| Processing | bean profile JSON | ✅ Yes |
+| Roast Age (days) | computed from roastDate | ✅ Yes |
+| Dose In (g) | lastRecommendation_.doseIn | ✅ Yes |
+| Grind Setting | lastRecommendation_.grindSetting | ✅ Yes |
+| Brew Time (s) | brew timer (controller:brew:end payload) | ✅ Yes |
+| Dose Out / Ratio | BLE scale via BLEScalePlugin | ✅ if scale connected |
+| Profile ID | active profile (controller:brew:end payload) | ✅ Yes |
+| Pre-infusion (ms) | active profile settings | ✅ Yes |
+| Channeling Score | lastChannelingResult_.score | ✅ Yes |
+| Channeling Severity | derived from score | ✅ Yes |
+| Predicted Taste | lastRecommendation_.predictedTaste | ✅ Yes |
+| Predicted Yield % | lastRecommendation_.predictedYield | ✅ Yes |
+| Method / Tier | lastRecommendation_.method | ✅ Yes |
+| **Rating** | **user** | ❌ Only user input needed |
+| **Taste tags** | **user** | ❌ Optional |
+
+**New firmware event — `adaptive-brew:shot-prefill`:**
+```json
+{
+  "shotId": 247,
+  "timestamp": 1747267920,
+  "beanId": "Ethiopia Yirgacheffe Apr26",
+  "roastLevel": "Medium",
+  "processing": "Natural",
+  "roastAgeDays": 19,
+  "doseIn": 18.0,
+  "grindSetting": 28,
+  "brewTime": 89,
+  "ratio": 2.1,
+  "profileId": "standard-espresso",
+  "preInfusionMs": 4000,
+  "channelingScore": 45,
+  "channelingSeverity": "moderate",
+  "predictedTaste": "bright-acidic",
+  "predictedYield": 24.0,
+  "method": "bean_prior"
+}
+```
+
+**UI behaviour:**
+- After-Shot Analysis panel switches from "waiting" to "review" state.
+- All pre-filled fields shown as read-only chips.
+- Only rating (stars) and taste tags are interactive.
+- A single **"Save & Learn"** button persists the complete record.
+- A **"Edit fields"** toggle allows overriding any pre-filled value if the
+  user wants to correct something (e.g., they used a different grind).
+
+**Firmware wiring (AdaptiveBrewPlugin):**
+```cpp
+void onBrewEnd(JsonObject& brewPayload) {
+    JsonObject prefill = buildPrefill(brewPayload); // assembles all fields above
+    pluginManager_->trigger("adaptive-brew:shot-prefill", prefill);
+    // existing channeling result emit stays separate
+}
+```
+
+---
+
+### 10.3 Propagate Shot Rating from After-Shot Analysis to Shot History  ★★★
+
+**Current behaviour:**
+Rating entered in the After-Shot Analysis panel (if it exists) is not written
+back to the shot history JSON. The history record and the analysis panel are
+disconnected. The learning loop (`learnFromShot()`) either misses the rating
+entirely or requires the user to navigate to history and enter it again.
+
+**Proposed:**
+When the user taps **"Save & Learn"** in the After-Shot Analysis panel, the
+rating and taste tags are written directly into the shot's notes JSON on SD
+card, and `learnFromShot()` is triggered immediately with the rating included.
+No separate history form interaction required.
+
+**New inbound event — `adaptive-brew:save-shot-rating`:**
+```json
+{
+  "shotId": 247,
+  "rating": 4,
+  "tasteTags": ["balanced", "bright"],
+  "grindUsed": 28,
+  "followedRecommendation": true
+}
+```
+
+**Firmware handler:**
+```cpp
+on("adaptive-brew:save-shot-rating", [](JsonObject& data) {
+    int shotId    = data["shotId"];
+    int rating    = data["rating"];         // 1–5
+    // open /h/000247.json, merge rating + tasteTags, save
+    shotHistory_.updateNotes(shotId, data);
+    // re-run learning with the now-complete record
+    learnFromShot(shotId);
+});
+```
+
+**`learnFromShot()` change:**
+Rating is already stored in the notes JSON and used by the KNN distance
+formula (`dist + decay + rating`). Once the rating is written, the existing
+step ③ (`beanMgr_.learnBehavior(beanId)`) and step ⑥
+(`PostShotGrindAdvisor.advise()`) automatically benefit from it — no other
+changes needed. This also closes gap **3.2** from the gap analysis (rating
+was stored but ignored by the grind advisor).
+
+**`followedRecommendation` flag:**
+If the user confirms they used the recommended grind (`grindUsed` matches
+`lastRecommendation_.grindSetting`), the shot is marked as a clean learning
+example. If they deviated, the learning still happens but the prediction
+accuracy metric is not penalised.
+
+**Full data flow after these three improvements:**
+
+```
+Brew ends
+    │
+    ├─► adaptive-brew:channeling-result { shotId, score, … }
+    │       → After-Shot Analysis button shows "Shot #247"
+    │
+    ├─► adaptive-brew:shot-prefill { shotId, beanId, grindSetting, … }
+    │       → Panel pre-fills all fields
+    │       → User sees review screen, taps ★ rating + taste tags
+    │
+    └─► [Save & Learn tapped]
+            → req:adaptive-brew:save-shot-rating { shotId, rating, tags }
+            → Firmware writes rating to /h/000247.json
+            → learnFromShot(247) fires with complete data
+            → PostShotGrindAdvisor updates with rating signal
+            → Grind advice for next shot refreshes
+            → Shot history record is complete — nothing else to do
+```
+
+---
+
 ## Priority Summary
 
 | Priority | Area | Improvement |
 |---|---|---|
+| ★★★ | Shot linkage | 10.2 — Preload shot history fields automatically after brew |
+| ★★★ | Shot linkage | 10.3 — Propagate After-Shot rating to shot history + learning loop |
 | ★★★ | Data entry | 1.1 — Roast date replaces manual age field |
 | ★★★ | Data entry | 3 — Pre-populate shot history; user only rates |
 | ★★★ | UX | 5.1 — Immediate post-shot rating overlay |
 | ★★★ | Coaching | 9 — Shot Coach: barista diagnosis + action plan |
+| ★★ | Shot linkage | 10.1 — Show shot number on After-Shot Analysis button |
 | ★★ | Data entry | 2.1 — Auto-fill Dose In from BLE scale |
 | ★★ | Data entry | 1.2 — Auto-fill bean fields from profile on Bean ID select |
 | ★★ | UX | 4.1 — Auto-trigger GetRecommendations when inputs ready |
