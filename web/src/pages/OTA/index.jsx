@@ -110,6 +110,37 @@ export function OTA() {
     [apiService],
   );
 
+  const [localFile, setLocalFile] = useState(null);
+  const [localUpdateType, setLocalUpdateType] = useState('firmware');
+  const [uploadError, setUploadError] = useState(null);
+
+  const onLocalUpload = useCallback(() => {
+    if (!localFile) return;
+    setUploadError(null);
+    setPhase(localUpdateType === 'filesystem' ? 2 : 1);
+    setProgress(0);
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `/api/ota/upload?type=${localUpdateType}`);
+    xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+    xhr.onload = () => {
+      try {
+        const result = JSON.parse(xhr.responseText);
+        if (!result.success) {
+          setUploadError(result.error || 'Upload failed');
+          setPhase(0);
+        }
+      } catch {
+        setUploadError('Upload failed');
+        setPhase(0);
+      }
+    };
+    xhr.onerror = () => {
+      setUploadError('Upload failed: network error');
+      setPhase(0);
+    };
+    xhr.send(localFile);
+  }, [localFile, localUpdateType]);
+
   const [rebuilding, setRebuilding] = useState(false);
   const [rebuilt, setRebuilt] = useState(false);
   const [rebuildProgress, setRebuildProgress] = useState({ total: 0, current: 0, status: '' });
@@ -282,6 +313,52 @@ export function OTA() {
               </span>
             </div>
           </Card>
+
+          <Card sm={12} title='Local Update'>
+            <div className='flex flex-col space-y-4'>
+              <label htmlFor='localUpdateType' className='mb-2 block text-sm font-medium'>
+                Update Type
+              </label>
+              <select
+                id='localUpdateType'
+                className='select select-bordered w-full'
+                value={localUpdateType}
+                onChange={e => setLocalUpdateType(e.target.value)}
+              >
+                <option value='firmware'>Display Firmware</option>
+                <option value='filesystem'>Display Filesystem</option>
+              </select>
+            </div>
+            <div className='flex flex-col space-y-4'>
+              <label htmlFor='localFile' className='mb-2 block text-sm font-medium'>
+                Firmware File (.bin)
+              </label>
+              <input
+                id='localFile'
+                type='file'
+                accept='.bin'
+                className='file-input file-input-bordered w-full'
+                onChange={e => setLocalFile(e.target.files[0] || null)}
+              />
+              {localFile && (
+                <span className='text-xs opacity-75'>
+                  {localFile.name} &mdash; {(localFile.size / 1024).toFixed(1)} KB
+                </span>
+              )}
+            </div>
+            {uploadError && (
+              <div className='alert alert-error'>
+                <span>{uploadError}</span>
+              </div>
+            )}
+            <div className='alert alert-info'>
+              <span>
+                Flash <strong>firmware</strong> to update the display software without touching
+                profiles or settings. Flash <strong>filesystem</strong> to update only the web
+                interface.
+              </span>
+            </div>
+          </Card>
         </div>
 
         <div className='pt-4 lg:col-span-12'>
@@ -306,6 +383,14 @@ export function OTA() {
               onClick={() => onUpdate('controller')}
             >
               Update Controller
+            </button>
+            <button
+              type='button'
+              className='btn btn-secondary'
+              disabled={!localFile}
+              onClick={onLocalUpload}
+            >
+              Flash Local File
             </button>
             <button type='button' className='btn btn-outline' onClick={downloadSupportData}>
               Download Support Data
