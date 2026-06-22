@@ -18,7 +18,7 @@ body{background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;color:var(
   color:var(--hi);margin-bottom:16px}
 .title em{color:var(--i);font-style:normal}
 
-#c{position:relative;width:1480px;flex-shrink:0}
+#c{position:relative;width:1480px;height:1866px;flex-shrink:0}
 #sv{position:absolute;top:0;left:0;width:100%;pointer-events:none;z-index:20;overflow:visible}
 
 .band{position:absolute;left:0;right:0;border-radius:12px;border:1px solid}
@@ -94,66 +94,72 @@ body{background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;color:var(
 <div id="c">
 
 <!-- ══ BANDS ══ -->
-<div class="band" style="top:10px;height:206px;border-color:rgba(14,165,233,.2);background:rgba(14,165,233,.03)"></div>
+<div class="band" style="top:10px;height:226px;border-color:rgba(14,165,233,.2);background:rgba(14,165,233,.03)"></div>
 <div class="bl" style="top:-2px;left:16px;color:#38bdf8;background:rgba(14,165,233,.14)">🌐 Web UI — AdaptiveBrewCard.jsx + ApiService.js</div>
 
-<div class="band" style="top:232px;height:820px;border-color:rgba(99,102,241,.18);background:rgba(99,102,241,.03)"></div>
-<div class="bl" style="top:220px;left:16px;color:var(--i);background:rgba(99,102,241,.14)">⚙️ ESP32 — AdaptiveBrewPlugin  (Coordinator)</div>
+<div class="band" style="top:252px;height:820px;border-color:rgba(99,102,241,.18);background:rgba(99,102,241,.03)"></div>
+<div class="bl" style="top:240px;left:16px;color:var(--i);background:rgba(99,102,241,.14)">⚙️ ESP32 — AdaptiveBrewPlugin  (Coordinator)</div>
 
-<div class="band" style="top:1062px;height:90px;border-color:var(--border);background:rgba(99,102,241,.03)"></div>
-<div class="bl" style="top:1050px;left:16px;color:var(--v);background:rgba(99,102,241,.12)">🧩 Sub-components</div>
+<div class="band" style="top:1082px;height:90px;border-color:var(--border);background:rgba(99,102,241,.03)"></div>
+<div class="bl" style="top:1070px;left:16px;color:var(--v);background:rgba(99,102,241,.12)">🧩 Sub-components</div>
 
-<div class="band" style="top:1166px;height:50px;border-color:var(--border);background:#07091280"></div>
-<div class="bl" style="top:1154px;left:16px;color:var(--gr);background:#0c1120">💾 SD Card</div>
+<div class="band" style="top:1186px;height:50px;border-color:var(--border);background:#07091280"></div>
+<div class="bl" style="top:1174px;left:16px;color:var(--gr);background:#0c1120">💾 SD Card</div>
 
 <!-- ══ WEB UI ══ -->
 
 <!-- Input -->
-<div class="card s" style="left:18px;top:28px;width:282px;height:180px">
+<div class="card s" style="left:18px;top:28px;width:282px;height:210px">
   <div class="ch">📥 User Input</div>
   <div class="cb">
-    <b>Dose In</b> (g) — integer-scale auto-detect<br>
-    <b>Bean ID</b> — shot-grouping label (free text)<br>
-    <b>Roast Level</b> ▾ Light / Med-Light / Med / Med-Dark / Dark<br>
-    <b>Processing</b> ▾ Washed / Natural / Honey / Anaerobic<br>
-    <b>Roast Age</b> (days) — freshness badge<br>
-    <b>Profile</b> — read-only from machine<br><br>
+    <b>Dose In</b> (g) — BLE scale auto-fill or carry-forward<br>
+    <b>Bean ID</b> ▾ — datalist from <code>list-beans</code> · auto-fill<br>
+    <b>Roast Level</b> ▾ auto-filled from firmware profile<br>
+    <b>Processing</b> ▾ Washed/Natural/Honey/Anaerobic/<b>Wet-Hulled</b><br>
+    <b>Roast Date</b> — date picker · <code>roastAgeDays</code> computed daily<br>
+    <b>Profile</b> — read-only from machine<br>
+    <b>Quick-repeat bar</b> when same bean as last session<br><br>
     → <code>req:adaptive-brew:register-bean</code><br>
     → <code>req:adaptive-brew:recommendations</code>
   </div>
 </div>
 
 <!-- Pre-shot -->
-<div class="card g" style="left:316px;top:28px;width:332px;height:180px">
+<div class="card g" style="left:316px;top:28px;width:332px;height:210px">
   <div class="ch">🎯 Pre-shot Panel</div>
   <div class="cb">
     <b>Grind Setting</b> — int/decimal, grinder-scale aware<br>
+    <b>Grinder position hint</b> — "at X — no change" / "→ move to Y"<br>
     <b>Method badge</b> + <b>METHOD_HINT</b> one-line tier reason<br>
+    <b>Uncertainty notice</b> — bag change / too fresh / stale<br>
     <b>Confidence bar</b> 35% → 75% (55% on bag change)<br>
     <b>Freshness badge</b> — Too Fresh / Optimal / Aging / Stale<br>
-    <b>Expected Taste · Yield Ratio · Time</b><br>
-    <b>Extraction Yield %</b> — derived from time + ratio (14–24%)<br>
-    <b>Pre-infusion Delay</b> · <b>Adjustment</b> ↑↓ N vs last shot<br>
+    <b>Expected Taste · Yield Ratio · Time</b> (expandable tooltip)<br>
+    <b>Extraction Yield %</b> — metric tooltip 14–24% benchmark<br>
+    <b>Adjustment</b> ↑↓ N vs last shot<br>
     Console: <code>buildFallbackLog</code> shows tier walk
   </div>
 </div>
 
 <!-- Post-shot -->
-<div class="card o" style="left:664px;top:28px;width:368px;height:180px">
-  <div class="ch">📋 Post-shot Panel</div>
+<div class="card o" style="left:664px;top:28px;width:368px;height:210px">
+  <div class="ch">📋 Post-shot Panel  (After-Shot Analysis · Shot #N)</div>
   <div class="cb">
-    <b>Channeling gauge</b> SVG ring 0–100 · severity badge<br>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;none&lt;20 · mild&lt;40 · moderate&lt;65 · severe≥65<br>
-    <b>Stats</b> — eventCount · maxDrop(bar) · flowCV<br><br>
+    <b>Channeling gauge</b> — SVG ring 0–100 · severity badge<br>
+    <b>Stats</b> — eventCount · maxDrop · flowCV <i>(expandable tooltips)</i><br>
+    <b>Shot Coach</b> (9.x) — scenarios A–F · what happened · action plan<br>
+    <b>Puck Prep Advisory</b> — streak ≥3 moderate+ shots<br>
     <b>Grind Advice pill</b> — finer / coarser / stay (N steps)<br>
     <b>Tags</b> — primaryFactor · trend ×1.2/1.4 · channeling<br>
-    <b>Confidence</b> · Reasoning text<br><br>
-    → parallel: <code>req:grind-advice</code>  +  <code>req:channeling</code>
+    <b>Confidence</b> · Reasoning · <b>ShotPrefillPanel</b> (15 s delay)<br>
+    Save&amp;Learn → <code>req:save-shot-rating</code> → <code>grind-advice</code> + <code>channeling</code><br>
+    <b style="color:#fb7185">🛡 Corrector</b> — live banner (band·P×·Q×·⏸) during brew · abort banner (10 s) · per-shot summary<br>
+    <i style="color:#fb923c">Only Channeling shows at brew:end · full timeline ▼ (bottom band)</i>
   </div>
 </div>
 
 <!-- WS Bridge -->
-<div class="card" style="left:1048px;top:28px;width:412px;height:180px;border-color:var(--border);background:var(--card)">
+<div class="card" style="left:1048px;top:28px;width:412px;height:220px;border-color:var(--border);background:var(--card)">
   <div class="ch" style="color:var(--dim)">🔌 ApiService.js — WebSocket Bridge</div>
   <div class="cb">
     <code>request(tp, data)</code> → rid-matched Promise · 30 s<br>
@@ -161,13 +167,16 @@ body{background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;color:var(
     <b>WebUIPlugin dispatch → internal event:</b><br>
     <code>req:…:recommendations</code> → <code>get-recommendations</code><br>
     <code>req:…:register-bean</code> → <code>register-bean</code><br>
-    <code>req:…:grind-advice</code> → <code>get-grind-advice</code> (cached)<br>
-    <code>req:…:channeling</code> → <code>get-channeling</code> (+ liveScore)
+    <code>req:…:grind-advice</code> → <code>get-grind-advice</code> (actualGrind override)<br>
+    <code>req:…:channeling</code> → <code>get-channeling</code> (time · yield · shotId)<br>
+    <code>req:…:list-beans</code> → <code>list-beans</code> <i>(datalist 1.2)</i><br>
+    <code>req:…:save-shot-rating</code> → <code>save-shot-rating</code> <i>(10.3)</i><br>
+    <code>req:…:get-last-brew-context</code> → <code>get-last-brew-context</code> <i>(catch-up)</i>
   </div>
 </div>
 
 <!-- ── Fallback chain mini-bar (under WebUI band, above firmware) ── -->
-<div style="position:absolute;left:18px;top:218px;width:1442px;height:14px;display:flex;
+<div style="position:absolute;left:18px;top:238px;width:1442px;height:14px;display:flex;
   align-items:center;justify-content:center;gap:6px">
   <span style="font-size:8.5px;color:var(--dim);font-weight:700;letter-spacing:.06em">FALLBACK_CHAIN ▶</span>
   <div class="chain">
@@ -179,11 +188,11 @@ body{background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;color:var(
     <span>knn</span><b>›</b>
     <span>rules</span>
   </div>
-  <span style="font-size:8px;color:var(--dim);font-style:italic">(JSX walks the chain · firmware fires whichever tier matches)</span>
+  <span style="font-size:8px;color:var(--dim);font-style:italic">(JSX walks the chain · firmware fires whichever tier matches · <b>knn</b> tier = LR⊕KNN ensemble · <b>ml</b> off by default)</span>
 </div>
 
 <!-- ══ PREDICTION PIPELINE ══ -->
-<div class="panel g" style="left:18px;top:248px;width:404px;height:790px">
+<div class="panel g" style="left:18px;top:268px;width:404px;height:812px">
   <div class="phd g">🎯 Prediction Pipeline · getPredictionWithContext()</div>
 
   <div class="tier g" style="margin-top:4px">
@@ -213,18 +222,20 @@ body{background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;color:var(
   </div>
 
   <div class="tier p">
-    <div class="th">Tier 1 — TFLite ML <span style="font-size:8px;color:var(--dim)">(ENABLE_TFLITE_PREDICTIONS)</span></div>
-    <div class="ts">Neural net trained on exported shot history (JSON)</div>
+    <div class="th">Tier 1 — TFLite ML <span style="font-size:8px;color:var(--dim)">(opt-in · OFF by default)</span></div>
+    <div class="ts">Dormant scaffolding (lib_deps + flag + SD model). Rewritten vs
+      <b>Eloquent::TF::Sequential</b> — real tensor shapes, strict size check, float32/int8.</div>
     <span class="tb">ml · 60–95%</span>
   </div>
 
   <div class="tier b">
-    <div class="th">Tier 2 — Adaptive KNN</div>
-    <div class="ts">K = √N × density · Gaussian kernel · dist + decay + rating<br>
-      8-dim: dose · grind · temp · pressure · time · ratio · profile · bean<br>
-      <b>Post-KNN freshness residual</b> when beanId registered:<br>
-      Δ = assessFreshness(age) − assessFreshness(DBmeanAge)</div>
-    <span class="tb">knn · 20–85%</span>
+    <div class="th">Tier 2 — Structure-first Ensemble  (LR ⊕ KNN)</div>
+    <div class="ts">
+      <b>WLS reg</b> grind=a·dose+b ⊕ <b>KNN</b> (K=√N×dens · Gaussian · dist×decay×rating)<br>
+      blend rw=min(.6,N/100) · LR-only @35% if KNN abstains<br>
+      <b>9-dim:</b> dose·temp·pressure·time·ratio·roastAge(log)·warmup·profile·bean <span style="color:#7c8aa0">(grind=label)</span><br>
+      abstain nearest&gt;2.5→−1 · MAX_DIM_SQ 9 caps z-dims · excl <b>autoSaved</b>+<b>labelSuspect</b></div>
+    <span class="tb">knn · 20–90%</span>
   </div>
 
   <div class="tier gr">
@@ -237,71 +248,103 @@ body{background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;color:var(
     <div style="font-size:9px;font-weight:700;color:var(--i);margin-bottom:2px">Secondary Predictions</div>
     <div style="font-size:8.5px;color:var(--dim);line-height:1.55">
       KNN k=5 on hypothetical shot → <b>predictedRatio · predictedTime</b><br>
-      <b>predictedYield</b> = 18% + (time−28)×0.3 + (ratio−2)×2 · clamp 14–24%<br>
+      <b>predictedYield</b> = <code>BrewConstants::estimateYield</code> = 18% + (t−28)×.3 + (ratio−2)×2 · clamp 14–24% <span style="color:#7c8aa0">(shared w/ FeatureDatabase)</span><br>
       Integer-scale auto-detect: round if all DB grinds are whole numbers<br>
       grindAdjustment = predicted − last shot · integer-aware
     </div>
   </div>
 
   <div class="note y">
-    <div style="font-size:9px;font-weight:700;color:var(--y);margin-bottom:2px">Taste  (predictTasteOutcome)</div>
+    <div style="font-size:9px;font-weight:700;color:var(--y);margin-bottom:2px">Taste  (predictTasteOutcome → TFLite? → TastePredictor)</div>
     <div style="font-size:8.5px;color:var(--dim);line-height:1.55">
-      <b>①</b> Dose pre-check: |doseIn − DBmean| &gt; 3 g → sour / bitter<br>
-      <b>②</b> Bean KNN first (≥3 shots) — data beats thresholds<br>
-      <b>③</b> Time threshold (no ratio bump for dark roasts)<br>
-      <b>④</b> Grind deviation ±1.2 σ from DB mean → sour / bitter<br>
-      KNN distance: grindSetting + time + ratio + dose
+      <b>①</b> Dose ±3 g from DBmean → sour / bitter<br>
+      <b>②</b> Bean-aware: bean-KNN ≥3 (time·ratio·grind·pressure) else thresholds (acidity/roast/proc + typ.time ±5 s)<br>
+      <b>③</b> General KNN <b>6-dim:</b> grind·time·ratio·pressure·dose·temp<br>
+      <b>④</b> Rule fallback · <span style="color:#7c8aa0">excl autoSaved labels · labelSuspect is grind-only</span>
     </div>
   </div>
 </div>
 
-<!-- ══ REAL-TIME ══ -->
-<div class="panel o" style="left:438px;top:248px;width:308px;height:316px">
-  <div class="phd o">⚡ Real-Time · loop() every 250 ms</div>
+<!-- ══ REAL-TIME · DETECTOR ══ -->
+<div class="panel o" style="left:438px;top:268px;width:308px;height:298px">
+  <div class="phd o">⚡ Real-Time · loop() every 250 ms — ChannelingDetector</div>
 
   <div style="margin:4px 8px 6px;text-align:center;font-size:9px;color:var(--txt);padding:5px;
     background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.3);border-radius:6px">
-    <b style="color:#fb923c">ChannelingDetector.addSample()</b><br>
-    pressure · pumpFlow · puckFlow · resistance
+    <b style="color:#fb923c">detector_.addSample()</b> · enters extraction ≥5 bar<br>
+    pressure · pumpFlow · puckFlow · resistance (EMA α0.30)
   </div>
 
   <div class="sig" style="border-color:rgba(239,68,68,.35);background:rgba(239,68,68,.07)">
-    <b style="color:#f87171">① Pressure + Flow  (both required)</b><br>
-    <span style="color:var(--dim)">drop ≥1.5 bar AND spike ≥1.4× EMA → <b>up to 55 pt</b></span>
+    <b style="color:#f87171">① Pressure-drop + Flow-spike  (both required)</b><br>
+    <span style="color:var(--dim)">drop ≥1.5 bar (vs EMA, P≥3 bar) AND spike ≥1.4× EMA → <b>25 pt/ev, ≤55</b> · 4-sample (~1 s) cooldown</span>
   </div>
   <div class="sig a">
     <b>② Resistance Collapse</b><br>
-    <span style="color:var(--dim)">puck resistance ≥28% below peak → <b>up to 15 pt</b></span>
+    <span style="color:var(--dim)">≥28% below running peak <b>AND concurrent flow-spike</b> → <b>10 pt/ev, ≤15</b><br>only while puck flow &gt;0.2 ml/s (else resistance is noise)</span>
   </div>
   <div class="sig b">
     <b>③ Puck-flow CoV</b><br>
-    <span style="color:var(--dim)">high flow variance → persistent channeling → <b>up to 30 pt</b></span>
+    <span style="color:var(--dim)">RMS flow deviation from EMA trend ÷ mean (CoV 0.22→0.75) → <b>≤30 pt</b> · smooth ramps → ~0</span>
   </div>
 
-  <div style="margin:5px 8px;text-align:center;font-size:9px;color:var(--dim);padding:5px;
+  <div style="margin:5px 8px;text-align:center;font-size:9px;color:var(--dim);padding:4px;
     background:rgba(8,12,24,.7);border-radius:6px;border:1px solid var(--border)">
-    score = min(100, Σ signals)<br>
+    score = min(100, Σ signals) ·
     <span style="color:#22c55e">none</span>&lt;20 ·
     <span style="color:#f59e0b">mild</span>&lt;40 ·
-    <span style="color:#f97316">moderate</span>&lt;65 ·
+    <span style="color:#f97316">mod</span>&lt;65 ·
     <span style="color:#ef4444">severe</span>≥65
   </div>
 </div>
 
+<!-- ══ REAL-TIME · CORRECTOR (opt-in) ══ -->
+<div class="panel" style="left:438px;top:578px;width:308px;height:300px;border-radius:10px;
+  border:1px solid rgba(239,68,68,.32);background:rgba(239,68,68,.05)">
+  <div class="phd" style="color:#fb7185;background:rgba(239,68,68,.12)">🛡 Channeling Corrector · corrector_.evaluate() per tick</div>
+
+  <div style="margin:4px 8px 5px;font-size:8.5px;color:var(--dim);text-align:center;padding:4px;
+    background:rgba(8,12,24,.6);border-radius:6px;border:1px solid var(--border)">
+    Opt-in: only profiles with a <code>correction</code> block (<b>caps.supportsCorrection</b>) · off unless <code>cfg.enabled</code><br>
+    <span style="color:#fb7185">Guard zones</span> (preinfusion / dripping / nearShotEnd) → identity + slew reset
+  </div>
+
+  <div style="font-size:8.5px;color:var(--dim);line-height:1.62;padding:0 9px">
+    <b style="color:var(--hi)">A</b> EMA smooth α0.30 → <code>s</code> (every stage uses s, not raw)<br>
+    <b style="color:var(--hi)">B</b> Schmitt severity band — enter 20/40/65 · exit 16/36/58 → gain <code>k</code> 0/.35/.7/1.0<br>
+    <b style="color:var(--hi)">C</b> progress <code>p</code> = vOut/vTarget <i>or</i> t/30 s → zone E&lt;.34/M&lt;.67/L · <code>w_v</code>=1−p<br>
+    &nbsp;&nbsp;&nbsp;roast× Light .6 · Omni 1 · Med-Dark 1.3 · Unk .8<br>
+    <b style="color:var(--hi)">D</b> drop = cfg.max × k × w_v × roast · ε-floored · floorScale .40<br>
+    &nbsp;&nbsp;&nbsp;<b style="color:#fb7185">primary lever only</b> (correct what the phase controls)<br>
+    <b style="color:var(--hi)">E</b> slew limiter ±0.05/tick → <code>pressureScale · flowScale</code><br>
+    <b style="color:var(--hi)">⏸</b> micro-pause — severe early/mid · honours cfg.pauseMs · 3 s cooldown<br>
+    <b style="color:var(--hi)">F</b> abort AND-gate — allowAbort &amp; supportsAbort &amp; severe &amp; s≥75 &amp; vOut&lt;7 g &amp; roast∈{Omni,Med-Dark} &amp; Early &amp; dwell 2.5 s
+  </div>
+
+  <div style="margin:5px 8px 0;font-size:8px;color:var(--dim);padding:4px 6px;
+    background:rgba(239,68,68,.08);border-radius:6px;border:1px solid rgba(239,68,68,.2)">
+    Applies as <b style="color:#fb7185">BrewProcess overlay</b> — <code>bp->setCorrection(pScale,fScale,pause)</code> / <code>clearCorrection()</code> · never drives the pump directly<br>
+    Emits ← <code>adaptive-brew:correction</code> · <code>:correction-abort</code> (abort fires <i>before</i> deactivate)
+  </div>
+</div>
+
 <!-- Brew lifecycle -->
-<div style="position:absolute;left:438px;top:578px;width:308px;height:152px;border-radius:10px;
-  border:1px solid rgba(99,102,241,.25);background:rgba(8,12,24,.8);padding:10px">
+<div style="position:absolute;left:438px;top:888px;width:308px;height:174px;border-radius:10px;
+  border:1px solid rgba(99,102,241,.25);background:rgba(8,12,24,.8);padding:9px">
   <div style="font-size:9px;font-weight:700;color:var(--i);text-transform:uppercase;
-    letter-spacing:.08em;margin-bottom:7px">Brew Lifecycle Events</div>
-  <div class="ev ei">→ controller:brew:start — reset(), brewing_=true</div>
+    letter-spacing:.08em;margin-bottom:6px">Brew Lifecycle Events</div>
+  <div class="ev ei">→ controller:brew:start — detector_+corrector_.reset()</div>
   <div class="ev ei">→ pump:puck-resistance:change — lastPuckResistance_</div>
-  <div class="ev ei">→ controller:brew:end — getResult() → cache</div>
-  <div class="ev eo" style="margin-top:4px">← adaptive-brew:channeling-result  (broadcast)</div>
+  <div class="ev ei">→ controller:brew:end — getResult() → deferred</div>
+  <div class="ev eo" style="margin-top:3px">← adaptive-brew:correction  <span style="font-size:8px;color:#9ca3af">scales·pause·abort·reason·smoothedScore·band</span></div>
+  <div class="ev eo">← adaptive-brew:correction-abort  <span style="font-size:8px;color:#9ca3af">score·elapsedSec·volumeOut</span></div>
+  <div class="ev eo">← adaptive-brew:channeling-result  <span style="font-size:8px;color:#9ca3af">+ shotId·brewTimeSec</span></div>
+  <div class="ev eo">← adaptive-brew:shot-prefill  <span style="font-size:8px;color:#9ca3af">(if ≥15 s)</span></div>
 </div>
 
 <!-- ══ LEARNING FLOW ══ -->
-<div class="panel v" style="left:762px;top:248px;width:392px;height:482px">
-  <div class="phd v">📚 learnFromShot() · on history:notes:saved</div>
+<div class="panel v" style="left:762px;top:268px;width:392px;height:482px">
+  <div class="phd v">📚 learnFromShot() · on history:notes:saved <i>or</i> save-shot-rating</div>
   <div style="padding:4px 10px 0">
     <div class="step"><div class="sn">①</div><div class="sb">
       <b>Persist channelingScore</b> to shot notes JSON<br>
@@ -343,7 +386,7 @@ body{background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;color:var(
 <!-- ══ EVENTS + CACHE ══ -->
 
 <!-- Inbound -->
-<div style="position:absolute;left:1170px;top:248px;width:290px;height:294px;border-radius:10px;
+<div style="position:absolute;left:1170px;top:268px;width:290px;height:340px;border-radius:10px;
   border:1px solid rgba(20,184,166,.25);background:rgba(8,12,24,.8);padding:10px">
   <div style="font-size:9px;font-weight:700;color:var(--t);text-transform:uppercase;
     letter-spacing:.08em;margin-bottom:7px">Inbound Events  (pluginManager→on)</div>
@@ -358,42 +401,54 @@ body{background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;color:var(
   <div class="ev ei">→ adaptive-brew:reload-models</div>
   <div class="ev ei">→ controller:brew:start / :end</div>
   <div class="ev ei">→ pump:puck-resistance:change</div>
+  <div class="ev ei" style="border-color:rgba(99,102,241,.35)">→ adaptive-brew:list-beans  <span style="color:#6366f1">(1.2)</span></div>
+  <div class="ev ei" style="border-color:rgba(99,102,241,.35)">→ adaptive-brew:save-shot-rating  <span style="color:#6366f1">(10.3)</span></div>
+  <div class="ev ei" style="border-color:rgba(99,102,241,.35)">→ adaptive-brew:get-last-brew-context  <span style="color:#6366f1">(catch-up)</span></div>
 </div>
 
 <!-- Outbound -->
-<div style="position:absolute;left:1170px;top:554px;width:290px;height:108px;border-radius:10px;
+<div style="position:absolute;left:1170px;top:620px;width:290px;height:196px;border-radius:10px;
   border:1px solid rgba(245,158,11,.25);background:rgba(8,12,24,.8);padding:10px">
   <div style="font-size:9px;font-weight:700;color:var(--a);text-transform:uppercase;
     letter-spacing:.08em;margin-bottom:7px">Outbound Events  (pluginManager→trigger)</div>
-  <div class="ev eo">← adaptive-brew:channeling-result</div>
-  <div class="ev eo">← adaptive-brew:grind-advice</div>
-  <div class="ev eo">← adaptive-brew:training-data-ready</div>
+  <div class="ev eo" style="border-color:rgba(239,68,68,.4)">← adaptive-brew:correction  <span style="color:#fb7185;font-size:8px">(live overlay)</span>
+    <br><span style="font-size:8px;color:#9ca3af;margin-left:4px">scales · pause · abort · reason · smoothedScore · band</span></div>
+  <div class="ev eo" style="border-color:rgba(239,68,68,.4);margin-top:3px">← adaptive-brew:correction-abort  <span style="font-size:8px;color:#9ca3af">score · elapsedSec · volumeOut</span></div>
+  <div class="ev eo" style="margin-top:3px">← adaptive-brew:channeling-result
+    <br><span style="font-size:8px;color:#9ca3af;margin-left:4px">score · events · maxDrop · flowCV · severity · <b>shotId · brewTimeSec</b></span></div>
+  <div class="ev eo" style="margin-top:3px">← adaptive-brew:shot-prefill  <span style="color:#f97316;font-size:8px">(10.2)</span></div>
+  <div class="ev eo" style="margin-top:3px">← adaptive-brew:grind-advice · :training-data-ready</div>
 </div>
 
 <!-- Cache -->
-<div style="position:absolute;left:1170px;top:674px;width:290px;height:200px;border-radius:10px;
+<div style="position:absolute;left:1170px;top:828px;width:290px;height:240px;border-radius:10px;
   border:1px solid var(--border);background:rgba(8,12,24,.9);padding:10px">
   <div style="font-size:9px;font-weight:700;color:var(--dim);text-transform:uppercase;
     letter-spacing:.08em;margin-bottom:7px">Cached State  (in-memory)</div>
-  <div style="font-size:9px;color:var(--dim);line-height:1.72">
-    <b style="color:var(--hi)">lastChannelingResult_</b><br>
-    score · eventCount · maxDrop · flowCV · severity<br><br>
-    <b style="color:var(--hi)">lastGrindAdvice_</b><br>
-    adjustmentSteps · confidence · reasoning<br>
-    primaryFactor · trendFlag · trendMultiplier<br><br>
-    <b style="color:var(--hi)">brewing_</b> — liveScore exposed during active shot
+  <div style="font-size:8.5px;color:var(--dim);line-height:1.55">
+    <b style="color:var(--hi)">lastChannelingResult_</b> — score·events·maxDrop·flowCV·severity<br>
+    <b style="color:var(--hi)">lastGrindAdvice_</b> — steps·conf·reason·primaryFactor·trend<br>
+    <b style="color:var(--hi)">lastShotForAdvice_</b> — re-advise w/ actual grind<br>
+    <b style="color:var(--hi)">lastBrewExtractionTime_ · lastBrewExtractionYield_</b> — Shot Coach<br>
+    <b style="color:#6366f1">Shot linkage:</b> <b style="color:var(--hi)">lastShotId_</b> (@brew:end) ·
+    <b style="color:var(--hi)">lastSession{BeanId,DoseIn,RoastAgeDays}_</b><br>
+    <b style="color:var(--hi)">lastPredicted{Grind,Yield,Taste}_ · lastPredictionMethod_</b><br>
+    <i style="font-size:8px">↑ cached from last recommendations for prefill assembly</i><br>
+    <b style="color:var(--hi)">brewing_</b> · <b style="color:var(--hi)">lastBrewStartMs_</b> (corrector elapsed) ·
+    <b style="color:var(--hi)">lastBrewTimestamp_</b> (5 min guard)<br>
+    <span style="color:#7c8aa0">Corrector cross-tick state lives in <b>corrector_</b> (sEMA·band·slew·dwell), not here</span>
   </div>
 </div>
 
 <!-- Response payload reference -->
-<div style="position:absolute;left:762px;top:740px;width:392px;height:188px;border-radius:10px;
+<div style="position:absolute;left:762px;top:760px;width:392px;height:188px;border-radius:10px;
   border:1px solid rgba(34,197,94,.25);background:rgba(8,12,24,.85);padding:10px">
   <div style="font-size:9px;font-weight:700;color:var(--g);text-transform:uppercase;
     letter-spacing:.08em;margin-bottom:7px">res:adaptive-brew:recommendations  payload</div>
   <div style="font-size:9px;color:var(--dim);line-height:1.7">
     <code style="color:var(--a)">grindSetting</code> · <code style="color:var(--a)">grindAdjustment</code> · <code style="color:var(--a)">confidence</code><br>
     <code style="color:var(--a)">predictedRatio</code> · <code style="color:var(--a)">predictedTime</code> · <code style="color:var(--a)">predictedTaste</code><br>
-    <code style="color:var(--a)">predictedYield</code> <span style="color:var(--dim);font-size:8px">(NEW — extraction yield %, 14–24)</span><br>
+    <code style="color:var(--a)">predictedYield</code> <span style="color:var(--dim);font-size:8px">(extraction yield %, 14–24)</span><br>
     <code style="color:var(--a)">method</code> · <code style="color:var(--a)">reasoning</code> · <code style="color:var(--a)">dataPoints</code><br>
     <code style="color:var(--a)">brewDelay</code> <span style="color:var(--dim);font-size:8px">(from settings, not AI)</span><br>
     <code style="color:var(--a)">currentDoseIn</code> · <code style="color:var(--a)">profileId</code><br><br>
@@ -404,48 +459,153 @@ body{background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;color:var(
 
 <!-- ══ SUB-COMPONENTS ══ -->
 
-<div class="pill b"  style="left:18px; top:1076px;width:190px;height:70px">
+<div class="pill b"  style="left:18px; top:1096px;width:190px;height:70px">
   <div class="ph">FeatureDatabase</div>
-  <div class="pb">shots[] · stats{} · profileIdx · beanIdx<br>KNN query · MAD-3σ outlier removal<br>exportTrainingData()</div>
+  <div class="pb">shots[] · stats · profile/beanIdx · MAD-3σ<br><b>phase-aware</b> avg (extraction window)<br>warmupGaps · <b>flagLabelOutliers</b> · export</div>
 </div>
-<div class="pill g"  style="left:220px;top:1076px;width:190px;height:70px">
+<div class="pill g"  style="left:220px;top:1096px;width:190px;height:70px">
   <div class="ph">BeanManager</div>
   <div class="pb">profiles · similarity · predictGrind()<br>computeMetadataPrior() + dose adj<br>lastLearnedCorrectionDelta</div>
 </div>
-<div class="pill i"  style="left:422px;top:1076px;width:190px;height:70px">
+<div class="pill i"  style="left:422px;top:1096px;width:190px;height:70px">
   <div class="ph">GrindPredictor</div>
-  <div class="pb">Adaptive KNN · Gaussian kernel<br>doseCoeff fallback 0.05 steps/g<br>8-dim weighted distance</div>
+  <div class="pb">ensemble: WLS reg ⊕ KNN<br>9-dim dist · MAX_DIM_SQ cap<br>abstention &gt;2.5 · warmup dim</div>
 </div>
-<div class="pill p"  style="left:624px;top:1076px;width:190px;height:70px">
+<div class="pill p"  style="left:624px;top:1096px;width:190px;height:70px">
   <div class="ph">BeanGrindPrior</div>
   <div class="pb">5×3 processing×roast table<br>4-tier freshness model<br>globalGrindBaseline()</div>
 </div>
-<div class="pill o"  style="left:826px;top:1076px;width:204px;height:70px">
+<div class="pill o"  style="left:826px;top:1096px;width:204px;height:70px">
   <div class="ph">PostShotGrindAdvisor</div>
   <div class="pb">time+ratio+taste+channeling+fresh<br>trend ×1.2/1.4 · clamp ±1.2<br>confidence 35% → 80%</div>
 </div>
-<div class="pill y"  style="left:1042px;top:1076px;width:190px;height:70px">
+<div class="pill y"  style="left:1042px;top:1096px;width:190px;height:70px">
   <div class="ph">TastePredictor</div>
-  <div class="pb">dose pre-check ±3 g<br>bean KNN first (data &gt; thresholds)<br>grind σ-deviation ±1.2σ bias</div>
+  <div class="pb">dose pre-check ±3 g<br>bean KNN first (data &gt; thresholds)<br><b>autoSaved</b> guard (excl. AI labels)</div>
 </div>
-<div class="pill gr" style="left:1244px;top:1076px;width:216px;height:70px">
+<div class="pill gr" style="left:1244px;top:1096px;width:216px;height:70px">
   <div class="ph">WeightOptimizer</div>
   <div class="pb">5-fold cross-validation<br>grid search on feature weights<br>every 10 quality shots</div>
 </div>
 
 <!-- ══ STORAGE ══ -->
-<div class="st" style="left:18px; top:1176px;width:386px;height:34px">
+<div class="st" style="left:18px; top:1196px;width:386px;height:34px">
   <span class="sh">Shot index</span><span class="sb2"> — .slog binary (250 ms samples per shot)</span>
 </div>
-<div class="st" style="left:416px;top:1176px;width:610px;height:34px">
-  <span class="sh">Notes JSON</span><span class="sb2"> — channelingScore · beanId · roastAgeDays · balanceTaste · rating · doseIn/Out · grindSetting</span>
+<div class="st" style="left:416px;top:1196px;width:610px;height:34px">
+  <span class="sh">Notes JSON</span><span class="sb2"> — channelingScore · beanType · roastAgeDays · balanceTaste · rating · doseIn/Out · grindSetting · tasteTags · <b>autoSaved · labelSuspect</b></span>
 </div>
-<div class="st" style="left:1038px;top:1176px;width:422px;height:34px">
-  <span class="sh">Bean profiles JSON</span><span class="sb2"> — roastLevel · processing · lastLearnedCorrectionDelta · model</span>
+<div class="st" style="left:1038px;top:1196px;width:422px;height:34px">
+  <span class="sh">Bean profiles JSON</span><span class="sb2"> — roastLevel · processing · <b>roastDate</b> · lastLearnedCorrectionDelta · model</span>
+</div>
+
+<!-- ══ AFTER-SHOT ANALYSIS · TWO-PHASE DATA POPULATION  (+ why Shot Coach waits) ══ -->
+<div class="band" style="top:1252px;height:600px;border-color:rgba(249,115,22,.2);background:rgba(249,115,22,.03)"></div>
+<div class="bl" style="top:1240px;left:16px;color:var(--o);background:rgba(249,115,22,.12)">📋 After-Shot Analysis — Two-Phase Data Population &amp; why Shot Coach waits for phase ②  (AdaptiveBrewCard.jsx → ShotCoach.jsx)</div>
+
+<!-- Phase 1 — at brew:end (immediate, event-pushed) -->
+<div class="card o" style="left:18px;top:1274px;width:466px;height:240px">
+  <div class="ch">① At brew:end — immediate  (live event push)</div>
+  <div class="cb">
+    Firmware <code>processPendingBrewEnd()</code> fires
+    <code>evt:adaptive-brew:channeling-result</code><br>
+    → handler calls <code>confirmShotInHistory()</code> only when
+    <b>brewTimeSec ≥ 15 s</b>, then polls <code>/api/history/index.bin</code>
+    (0 / 1 / 3 / 8 s) and sets the <b>channeling</b> state.<br>
+    <span style="color:#fb923c">Sub-15 s brews (flush / abort) populate nothing — the last real shot stays.</span><br><br>
+    Carries: <b>score · severity · eventCount · maxDrop · flowCV</b><br>
+    <b>extractionTime = brewTimeSec</b> <span style="color:#fb923c">(wall-clock · marked <code>provisional</code>)</span> · <b>yield = ∅</b><br><br>
+    Shows: <b style="color:#22c55e">CHANNELING ✓</b> · <b style="color:#9ca3af">SHOT COACH … pending</b> · <b style="color:#ef4444">GRIND ADVICE ✗</b>
+  </div>
+</div>
+
+<!-- Phase 2 — after rating / Save&Learn (pull) -->
+<div class="card v" style="left:500px;top:1274px;width:466px;height:240px">
+  <div class="ch">② After rating · Save&amp;Learn / ↻ refresh  (pull)</div>
+  <div class="cb">
+    <code>req:save-shot-rating</code> → firmware <code>learnFromShot()</code>:
+    persists channelingScore, <code>db_.build()</code>, fills
+    <code>lastBrewExtraction*_</code>, runs <b>PostShotGrindAdvisor</b>.<br>
+    Card then runs <code>fetchPostShotData()</code> in parallel:<br>
+    &nbsp;&nbsp;• <code>req:grind-advice</code> (actualGrind override)<br>
+    &nbsp;&nbsp;• <code>req:channeling</code> → now also returns<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<b>extractionTime = durationMs/1000</b> <span style="color:#a78bfa">(recorded .slog header)</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<b>extractionYield</b> = 18+(t−28)·0.3+(ratio−2)·2 <span style="color:#a78bfa">(needs doseOut)</span><br><br>
+    Shows: <b style="color:#22c55e">CHANNELING ✓</b> · <b style="color:#22c55e">SHOT COACH ✓</b> <span style="color:var(--dim)">(first shown · final data)</span> · <b style="color:#22c55e">GRIND ADVICE ✓</b><br>
+    <i style="font-size:8px">same path also fires on manual ↻ and on-connect catch-up</i>
+  </div>
+</div>
+
+<!-- Section ▸ data source matrix -->
+<div class="card" style="left:982px;top:1274px;width:478px;height:240px;border-color:var(--border);background:var(--card)">
+  <div class="ch" style="color:var(--dim)">🧩 Section ▸ data source</div>
+  <div class="cb" style="line-height:1.7">
+    <b style="color:var(--o)">CHANNELING</b> — ChannelingDetector live score → <code>lastChannelingResult_</code><br>
+    <span style="color:#6b7280">identical in ① and ②; rating never recomputes it</span><br><br>
+    <b style="color:var(--o)">SHOT COACH</b> — <code>matchScenarios(time, score, events, maxDrop, yield)</code><br>
+    <span style="color:#6b7280">withheld in ① via the <code>channeling.provisional</code> flag —
+    shows only with final data, like Grind Advice (see note)</span><br><br>
+    <b style="color:var(--o)">GRIND ADVICE</b> — PostShotGrindAdvisor → <code>lastGrindAdvice_</code><br>
+    <span style="color:#6b7280"><b>pull-only</b>: card has no listener for the grind-advice
+    event, so it appears only after <code>fetchPostShotData()</code></span>
+  </div>
+</div>
+
+<!-- Concluding detail of this section: the mechanism behind the phase-② wait -->
+<div class="note o" style="position:absolute;left:18px;top:1526px;width:1442px;margin:0;padding:7px 10px">
+  <div style="font-size:9px;font-weight:700;color:var(--o);margin-bottom:2px">⚠ Mechanism — what is incomplete at brew:end (and would flip the Shot Coach verdict)</div>
+  <div style="font-size:8.5px;color:var(--dim);line-height:1.55">
+    Two inputs to <code>matchScenarios()</code> are incomplete at brew:end.
+    <b>(1) yield = 0</b> blocks the yield-driven scenarios
+    <b>C</b> (fast + low yield → too coarse), <b>E</b> (high yield + long → over-extracted) and <b>F</b> (clean shot) —
+    only A / B / D / generic could match, and "What happened" would print <code>?%</code>.
+    <b>(2) time</b> is wall-clock <code>brewTimeSec</code>, not the recorded <code>durationMs/1000</code>, so it can sit in a different bucket (&lt;18 · 25–35 · &gt;50 s).
+    Either would make the coach verdict <b>change after rating</b>, so the card hides it (via <code>channeling.provisional</code>) until <code>fetchPostShotData()</code> delivers final time + yield — then it appears once, alongside Grind Advice.
+    Channeling score · events · maxDrop · flowCV are unaffected and show immediately in ①.
+  </div>
+</div>
+
+<!-- ── How to use it: correlate Grind Advice with the next Recommended Grind (3 boxes) ── -->
+<div class="bl" style="top:1648px;left:16px;color:var(--o);background:rgba(249,115,22,.12)">🧭 How to use it — correlate Grind Advice (post-shot) with the next Recommended Grind (don't chain them)</div>
+
+<div class="card t" style="left:18px;top:1668px;width:466px;height:172px">
+  <div class="ch">① After the shot — act &amp; rate</div>
+  <div class="cb">
+    <b>Read Grind Advice</b> — a Δ relative to the grind you actually used.<br>
+    → move the grinder that many steps → pull the next shot → <b>rate it</b>.<br>
+    The rating feeds <code>learnFromShot()</code>, so the model absorbs this
+    shot's outcome before the next recommendation.<br>
+    <i style="color:#6b7280">Advice is the responsive, immediate single-shot correction.</i>
+  </div>
+</div>
+
+<div class="card b" style="left:500px;top:1668px;width:466px;height:172px">
+  <div class="ch">② Before next shot — correlate the two deltas</div>
+  <div class="cb">
+    Both deltas share the same base (your last grind):<br>
+    • <b>Grind Advice</b> "↑/↓ N steps" — rule, last shot only<br>
+    • <b>Recommendation</b> "vs last shot" badge — model, all history<br>
+    <b>Agree in direction</b> → confident, go.<br>
+    <b>Disagree:</b> &lt;5 bean shots → trust <b>Advice</b> (model still sluggish);
+    ≥5 → trust <b>Recommendation</b> (it already absorbed the last shot).
+  </div>
+</div>
+
+<div class="card a" style="left:982px;top:1668px;width:478px;height:172px">
+  <div class="ch">③ Don't double-count — cautions</div>
+  <div class="cb">
+    <b>Never add Advice onto the Recommendation.</b> Once rated, the model
+    already includes that shot — chaining applies the fix twice →
+    <b>oscillation / hunting</b>.<br>
+    <b>Trend ×1.2 / ×1.4</b> (several recent shots agree) → move decisively;
+    a lone un-trended nudge on a dialed-in bean is likely noise.<br>
+    <b>Channeling</b> as the primary factor → fix <b>puck prep</b> (distribution /
+    tamp) first, not grind.
+  </div>
 </div>
 
 <!-- ══ SVG ARROWS ══ -->
-<svg id="sv" style="height:1222px">
+<svg id="sv" style="height:1250px">
 <defs>
   <marker id="mb" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#38bdf8" opacity=".8"/></marker>
   <marker id="mg" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#22c55e" opacity=".8"/></marker>
@@ -460,47 +620,50 @@ body{background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;color:var(
 <line x1="648" y1="118" x2="664" y2="118" stroke="#f97316" stroke-width="1.5" marker-end="url(#mo)" opacity=".6" stroke-dasharray="5,3"/>
 
 <!-- UI ↔ WS -->
-<line x1="466" y1="208" x2="466" y2="232" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#mb)" opacity=".55"/>
-<line x1="502" y1="232" x2="502" y2="208" stroke="#22c55e" stroke-width="1.5" marker-end="url(#mg)" opacity=".55"/>
-<line x1="484" y1="248" x2="484" y2="262" stroke="#8b5cf6" stroke-width="1.5" marker-end="url(#mp)" opacity=".55"/>
+<line x1="466" y1="208" x2="466" y2="252" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#mb)" opacity=".55"/>
+<line x1="502" y1="252" x2="502" y2="208" stroke="#22c55e" stroke-width="1.5" marker-end="url(#mg)" opacity=".55"/>
+<line x1="484" y1="268" x2="484" y2="282" stroke="#8b5cf6" stroke-width="1.5" marker-end="url(#mp)" opacity=".55"/>
 
 <!-- Tier chain x=220 -->
-<line x1="220" y1="354" x2="220" y2="368" stroke="#374151" stroke-width="1.2" marker-end="url(#md)" opacity=".65"/>
-<line x1="220" y1="404" x2="220" y2="418" stroke="#374151" stroke-width="1.2" marker-end="url(#md)" opacity=".65"/>
-<line x1="220" y1="470" x2="220" y2="484" stroke="#374151" stroke-width="1.2" marker-end="url(#md)" opacity=".65"/>
-<line x1="220" y1="518" x2="220" y2="532" stroke="#374151" stroke-width="1.2" marker-end="url(#md)" opacity=".65"/>
-<line x1="220" y1="576" x2="220" y2="590" stroke="#374151" stroke-width="1.2" marker-end="url(#md)" opacity=".65"/>
-<text x="227" y="366" font-size="7" fill="#2c3a4e" font-style="italic">grind≤0</text>
-<text x="227" y="416" font-size="7" fill="#2c3a4e" font-style="italic">grind≤0</text>
-<text x="227" y="482" font-size="7" fill="#2c3a4e" font-style="italic">grind≤0</text>
-<text x="227" y="530" font-size="7" fill="#2c3a4e" font-style="italic">grind≤0</text>
-<text x="227" y="588" font-size="7" fill="#2c3a4e" font-style="italic">grind≤0</text>
+<line x1="220" y1="374" x2="220" y2="388" stroke="#374151" stroke-width="1.2" marker-end="url(#md)" opacity=".65"/>
+<line x1="220" y1="424" x2="220" y2="438" stroke="#374151" stroke-width="1.2" marker-end="url(#md)" opacity=".65"/>
+<line x1="220" y1="490" x2="220" y2="504" stroke="#374151" stroke-width="1.2" marker-end="url(#md)" opacity=".65"/>
+<line x1="220" y1="538" x2="220" y2="552" stroke="#374151" stroke-width="1.2" marker-end="url(#md)" opacity=".65"/>
+<line x1="220" y1="596" x2="220" y2="610" stroke="#374151" stroke-width="1.2" marker-end="url(#md)" opacity=".65"/>
+<text x="227" y="386" font-size="7" fill="#2c3a4e" font-style="italic">grind≤0</text>
+<text x="227" y="436" font-size="7" fill="#2c3a4e" font-style="italic">grind≤0</text>
+<text x="227" y="502" font-size="7" fill="#2c3a4e" font-style="italic">grind≤0</text>
+<text x="227" y="550" font-size="7" fill="#2c3a4e" font-style="italic">grind≤0</text>
+<text x="227" y="608" font-size="7" fill="#2c3a4e" font-style="italic">grind≤0</text>
 
-<!-- Brew lifecycle → real-time -->
-<line x1="592" y1="566" x2="592" y2="578" stroke="#f97316" stroke-width="1.2" marker-end="url(#mo)" opacity=".55"/>
+<!-- detector → corrector (latest score fed each tick) -->
+<line x1="592" y1="566" x2="592" y2="578" stroke="#fb7185" stroke-width="1.3" marker-end="url(#mo)" opacity=".6"/>
+<text x="598" y="575" font-size="7" fill="#9a4a55" font-style="italic">currentScore()</text>
+<!-- corrector → lifecycle (events) -->
+<line x1="592" y1="878" x2="592" y2="888" stroke="#fb7185" stroke-width="1.2" marker-end="url(#mo)" opacity=".5"/>
 
 <!-- channeling result → cache -->
-<path d="M746 518 C940 518 940 740 1170 754" stroke="#f97316" stroke-width="1" fill="none" marker-end="url(#mo)" opacity=".28" stroke-dasharray="5,3"/>
+<path d="M746 470 C950 470 950 860 1170 860" stroke="#f97316" stroke-width="1" fill="none" marker-end="url(#mo)" opacity=".26" stroke-dasharray="5,3"/>
 
 <!-- learning → outbound events -->
-<path d="M1154 580 L1170 608" stroke="#8b5cf6" stroke-width="1.2" fill="none" marker-end="url(#mp)" opacity=".5"/>
+<path d="M1154 600 L1170 638" stroke="#8b5cf6" stroke-width="1.2" fill="none" marker-end="url(#mp)" opacity=".5"/>
 
 <!-- grind-advice → cache -->
-<path d="M1154 656 L1170 716" stroke="#8b5cf6" stroke-width="1" fill="none" marker-end="url(#mp)" opacity=".35" stroke-dasharray="4,3"/>
+<path d="M1154 720 L1170 800" stroke="#8b5cf6" stroke-width="1" fill="none" marker-end="url(#mp)" opacity=".35" stroke-dasharray="4,3"/>
 
 <!-- pipeline result → response payload -->
-<path d="M422 870 C600 870 600 770 762 770" stroke="#22c55e" stroke-width="1" fill="none" marker-end="url(#mg)" opacity=".3" stroke-dasharray="4,3"/>
+<path d="M422 890 C600 890 600 790 762 790" stroke="#22c55e" stroke-width="1" fill="none" marker-end="url(#mg)" opacity=".3" stroke-dasharray="4,3"/>
 
 <!-- response payload → pre-shot panel -->
-<path d="M955 740 C955 500 480 380 480 232" stroke="#22c55e" stroke-width="1" fill="none" marker-end="url(#mg)" opacity=".25" stroke-dasharray="5,3"/>
+<path d="M955 760 C955 520 480 400 480 232" stroke="#22c55e" stroke-width="1" fill="none" marker-end="url(#mg)" opacity=".25" stroke-dasharray="5,3"/>
 
 <!-- components → storage -->
-<line x1="113" y1="1146" x2="113" y2="1176" stroke="#374151" stroke-width="1.1" marker-end="url(#md)" opacity=".5"/>
-<line x1="316" y1="1146" x2="500" y2="1176" stroke="#22c55e" stroke-width="1" fill="none" marker-end="url(#mg)" opacity=".32" stroke-dasharray="3,3"/>
-<line x1="1140" y1="1146" x2="1230" y2="1176" stroke="#374151" stroke-width="1" fill="none" marker-end="url(#md)" opacity=".3" stroke-dasharray="3,3"/>
+<line x1="113" y1="1166" x2="113" y2="1196" stroke="#374151" stroke-width="1.1" marker-end="url(#md)" opacity=".5"/>
+<line x1="316" y1="1166" x2="500" y2="1196" stroke="#22c55e" stroke-width="1" fill="none" marker-end="url(#mg)" opacity=".32" stroke-dasharray="3,3"/>
+<line x1="1140" y1="1166" x2="1230" y2="1196" stroke="#374151" stroke-width="1" fill="none" marker-end="url(#md)" opacity=".3" stroke-dasharray="3,3"/>
 
 <!-- register-bean annotation -->
-<text x="304" y="244" font-size="8" fill="#4f5fbe" font-style="italic" text-anchor="middle">register-bean fires before recommendations — profile persisted to SD first</text>
+<text x="304" y="264" font-size="8" fill="#4f5fbe" font-style="italic" text-anchor="middle">register-bean fires before recommendations — profile persisted to SD first</text>
 </svg>
 
 </div><!-- /canvas -->
@@ -514,8 +677,10 @@ body{background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;color:var(
   <div style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:rgba(34,197,94,.15);border:1px solid #22c55e;display:inline-block"></span>Bean model ≥5 shots</div>
   <div style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:rgba(99,102,241,.15);border:1px solid #6366f1;display:inline-block"></span>Metadata prior 0–4 shots</div>
   <div style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:rgba(59,130,246,.15);border:1px solid #3b82f6;display:inline-block"></span>Adaptive KNN</div>
-  <div style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:rgba(249,115,22,.15);border:1px solid #f97316;display:inline-block"></span>Real-time channeling</div>
+  <div style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:rgba(249,115,22,.15);border:1px solid #f97316;display:inline-block"></span>Real-time channeling detector</div>
+  <div style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:rgba(239,68,68,.12);border:1px solid #fb7185;display:inline-block"></span>Channeling Corrector (opt-in overlay)</div>
   <div style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:rgba(234,179,8,.15);border:1px solid #eab308;display:inline-block"></span>Taste prediction</div>
+  <div style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:rgba(99,102,241,.12);border:1px solid #6366f1;display:inline-block"></span>Shot linkage 10.1–10.3</div>
 </div>
 
 </body>
